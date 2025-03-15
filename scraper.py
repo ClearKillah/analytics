@@ -329,143 +329,217 @@ class TelegramAnalytics:
         """Return mock data for best posts"""
         logging.info("Returning mock data for best posts")
         
-        # Sample posts data - 15 posts from different channels (mix of popular and less popular)
         posts = [
             {
-                'channel': 'Telegram News',
-                'channel_size': 'Крупный (1.2M+)',
-                'views': '500,000',
-                'forwards': '12,345',
-                'link': 'https://t.me/telegram/123',
-                'topic': 'Анонс новых функций',
-                'engagement': 'Высокий'
+                'channel': 'IT and Programming',
+                'channel_size': '450K subscribers',
+                'topic': 'Новые технологии в AI',
+                'views': '245,600',
+                'forwards': '12,340',
+                'engagement': '4.5%',
+                'likes': '9,870',
+                'comments': '1,234',
+                'link': 'https://t.me/itprogramming/1234',
+                'post_time': '09:30',
+                'post_date': 'Today',
+                'summary': 'Обзор последних достижений в области искусственного интеллекта, включая новые модели GPT-4o, Claude 3.7 и Gemini Pro.'
             },
             {
-                'channel': 'Durov\'s Channel',
-                'channel_size': 'Крупный (800K+)',
-                'views': '450,000',
-                'forwards': '10,500',
-                'link': 'https://t.me/durov/456',
-                'topic': 'Приватность данных',
-                'engagement': 'Высокий'
+                'channel': 'Business Daily',
+                'channel_size': '820K subscribers',
+                'topic': 'Финансовая аналитика',
+                'views': '196,800',
+                'forwards': '8,970',
+                'engagement': '3.8%',
+                'likes': '7,640',
+                'comments': '832',
+                'link': 'https://t.me/businessdaily/5678',
+                'post_time': '10:15',
+                'post_date': 'Today',
+                'summary': 'Анализ текущей ситуации на финансовых рынках, прогнозы по ключевым активам и рекомендации по инвестированию.'
+            },
+            {
+                'channel': 'World News',
+                'channel_size': '1.2M subscribers',
+                'topic': 'Международные новости',
+                'views': '732,150',
+                'forwards': '23,456',
+                'engagement': '5.2%',
+                'likes': '18,734',
+                'comments': '2,345',
+                'link': 'https://t.me/worldnews/9012',
+                'post_time': '08:45',
+                'post_date': 'Today',
+                'summary': 'Главные мировые новости: международные соглашения, политические события и главные заявления мировых лидеров.'
+            },
+            {
+                'channel': 'Tech Reviews',
+                'channel_size': '390K subscribers',
+                'topic': 'Обзор iPhone 16',
+                'views': '184,700',
+                'forwards': '7,820',
+                'engagement': '4.0%',
+                'likes': '6,540',
+                'comments': '987',
+                'link': 'https://t.me/techreviews/3456',
+                'post_time': '12:30',
+                'post_date': 'Today',
+                'summary': 'Подробный обзор нового iPhone 16: технические характеристики, тесты камеры, производительность и сравнение с конкурентами.'
             },
             {
                 'channel': 'Crypto News',
-                'channel_size': 'Средний (450K+)',
-                'views': '320,000',
-                'forwards': '8,200',
-                'link': 'https://t.me/crypto_news/789',
-                'topic': 'Биткоин',
-                'engagement': 'Высокий'
+                'channel_size': '570K subscribers',
+                'topic': 'Анализ рынка криптовалют',
+                'views': '218,500',
+                'forwards': '9,760',
+                'engagement': '4.2%',
+                'likes': '8,230',
+                'comments': '1,098',
+                'link': 'https://t.me/cryptonews/7890',
+                'post_time': '11:45',
+                'post_date': 'Today',
+                'summary': 'Текущее состояние рынка криптовалют, анализ Bitcoin и Ethereum, прогнозы по альткоинам и новости регулирования.'
             },
             {
-                'channel': 'Психология Жизни',
-                'channel_size': 'Средний (450K+)',
-                'views': '210,000',
-                'forwards': '5,600',
-                'link': 'https://t.me/psychology/567',
-                'topic': 'Саморазвитие',
-                'engagement': 'Средний'
+                'channel': 'Health & Wellness',
+                'channel_size': '630K subscribers',
+                'topic': 'Новое исследование о питании',
+                'views': '165,300',
+                'forwards': '6,450',
+                'engagement': '3.5%',
+                'likes': '5,870',
+                'comments': '734',
+                'link': 'https://t.me/healthwellness/2345',
+                'post_time': '14:15',
+                'post_date': 'Today',
+                'summary': 'Результаты нового исследования о влиянии питания на продолжительность жизни, ключевые рекомендации по здоровому питанию.'
             },
             {
-                'channel': 'IT Jobs',
-                'channel_size': 'Малый (120K+)',
-                'views': '95,000',
-                'forwards': '4,200',
-                'link': 'https://t.me/it_jobs/234',
-                'topic': 'Вакансии в IT',
-                'engagement': 'Высокий'
+                'channel': 'Science Today',
+                'channel_size': '420K subscribers',
+                'topic': 'Новое открытие в физике',
+                'views': '142,800',
+                'forwards': '5,930',
+                'engagement': '3.4%',
+                'likes': '4,760',
+                'comments': '623',
+                'link': 'https://t.me/sciencetoday/6789',
+                'post_time': '13:00',
+                'post_date': 'Today',
+                'summary': 'Физики совершили прорыв в области квантовых вычислений. Описание открытия, его значение и потенциальное применение.'
             },
             {
-                'channel': 'Кулинария',
-                'channel_size': 'Средний (340K+)',
-                'views': '180,000',
-                'forwards': '3,800',
-                'link': 'https://t.me/cooking/678',
-                'topic': 'Рецепты',
-                'engagement': 'Средний'
+                'channel': 'Travel Experiences',
+                'channel_size': '480K subscribers',
+                'topic': 'Скрытые места для отдыха',
+                'views': '154,600',
+                'forwards': '6,230',
+                'engagement': '3.7%',
+                'likes': '5,430',
+                'comments': '687',
+                'link': 'https://t.me/travelexperiences/9012',
+                'post_time': '15:30',
+                'post_date': 'Today',
+                'summary': 'Подборка малоизвестных, но живописных мест для отдыха, советы по планированию поездки и оптимальному бюджету.'
             },
             {
-                'channel': 'Маркетинг',
-                'channel_size': 'Малый (240K+)',
-                'views': '87,000',
-                'forwards': '2,100',
-                'link': 'https://t.me/marketing/345',
-                'topic': 'Инструменты маркетинга',
-                'engagement': 'Средний'
+                'channel': 'Movie Reviews',
+                'channel_size': '350K subscribers',
+                'topic': 'Анализ нового фильма',
+                'views': '128,700',
+                'forwards': '4,890',
+                'engagement': '3.2%',
+                'likes': '4,120',
+                'comments': '543',
+                'link': 'https://t.me/moviereviews/3456',
+                'post_time': '16:45',
+                'post_date': 'Today',
+                'summary': 'Подробный разбор нового фильма: сюжет, актерская игра, работа режиссера, спецэффекты и музыкальное сопровождение.'
             },
             {
-                'channel': 'Мемы',
-                'channel_size': 'Средний (420K+)',
-                'views': '270,000',
-                'forwards': '7,300',
-                'link': 'https://t.me/memes_daily/901',
-                'topic': 'Мемы',
-                'engagement': 'Высокий'
+                'channel': 'Fashion Trends',
+                'channel_size': '510K subscribers',
+                'topic': 'Тренды сезона',
+                'views': '175,400',
+                'forwards': '7,340',
+                'engagement': '3.8%',
+                'likes': '6,230',
+                'comments': '762',
+                'link': 'https://t.me/fashiontrends/7890',
+                'post_time': '10:00',
+                'post_date': 'Today',
+                'summary': 'Обзор главных модных тенденций нового сезона, советы по стилю и рекомендации по обновлению гардероба.'
             },
             {
-                'channel': 'Книжный клуб',
-                'channel_size': 'Малый (150K+)',
-                'views': '71,000',
-                'forwards': '1,600',
-                'link': 'https://t.me/books/432',
-                'topic': 'Обзор книги',
-                'engagement': 'Средний'
+                'channel': 'Gaming News',
+                'channel_size': '680K subscribers',
+                'topic': 'Анонс новой игры',
+                'views': '312,500',
+                'forwards': '15,670',
+                'engagement': '4.6%',
+                'likes': '12,340',
+                'comments': '1,543',
+                'link': 'https://t.me/gamingnews/2345',
+                'post_time': '18:30',
+                'post_date': 'Today',
+                'summary': 'Подробности о новой игре от крупной студии: геймплей, графика, сюжет, дата выхода и системные требования.'
             },
             {
-                'channel': 'Travel Tips',
-                'channel_size': 'Средний (350K+)',
-                'views': '134,000',
-                'forwards': '2,900',
-                'link': 'https://t.me/travel_world/567',
-                'topic': 'Путешествия',
-                'engagement': 'Средний'
+                'channel': 'Education Hub',
+                'channel_size': '290K subscribers',
+                'topic': 'Новые методы обучения',
+                'views': '98,700',
+                'forwards': '3,450',
+                'engagement': '3.0%',
+                'likes': '2,870',
+                'comments': '365',
+                'link': 'https://t.me/educationhub/6789',
+                'post_time': '09:15',
+                'post_date': 'Today',
+                'summary': 'Обзор инновационных подходов к образованию, эффективность различных методик и рекомендации для педагогов и студентов.'
             },
             {
-                'channel': 'Music Channel',
-                'channel_size': 'Малый (180K+)',
-                'views': '67,000',
-                'forwards': '1,400',
-                'link': 'https://t.me/music_trends/234',
-                'topic': 'Новые релизы',
-                'engagement': 'Средний'
+                'channel': 'Space Exploration',
+                'channel_size': '340K subscribers',
+                'topic': 'Новости с Марса',
+                'views': '145,800',
+                'forwards': '6,120',
+                'engagement': '3.6%',
+                'likes': '5,230',
+                'comments': '643',
+                'link': 'https://t.me/spaceexploration/9012',
+                'post_time': '11:30',
+                'post_date': 'Today',
+                'summary': 'Последние данные с марсохода, новые фотографии поверхности планеты и планы будущих миссий на Марс.'
             },
             {
-                'channel': 'Tech Insights',
-                'channel_size': 'Малый (90K+)',
-                'views': '38,000',
-                'forwards': '3,100',
-                'link': 'https://t.me/tech_insights/123',
-                'topic': 'Искусственный интеллект',
-                'engagement': 'Высокий'
+                'channel': 'Psychology Insights',
+                'channel_size': '380K subscribers',
+                'topic': 'Исследование поведения',
+                'views': '124,600',
+                'forwards': '4,950',
+                'engagement': '3.3%',
+                'likes': '4,230',
+                'comments': '521',
+                'link': 'https://t.me/psychologyinsights/3456',
+                'post_time': '14:45',
+                'post_date': 'Today',
+                'summary': 'Результаты нового психологического исследования, объяснение паттернов поведения и практические советы для самосовершенствования.'
             },
             {
-                'channel': 'Здоровье и Фитнес',
-                'channel_size': 'Средний (380K+)',
-                'views': '145,000',
-                'forwards': '2,200',
-                'link': 'https://t.me/health_lifestyle/678',
-                'topic': 'Фитнес',
-                'engagement': 'Средний'
+                'channel': 'Economic Analysis',
+                'channel_size': '520K subscribers',
+                'topic': 'Экономический прогноз',
+                'views': '187,300',
+                'forwards': '8,340',
+                'engagement': '3.9%',
+                'likes': '7,120',
+                'comments': '856',
+                'link': 'https://t.me/economicanalysis/7890',
+                'post_time': '13:15',
+                'post_date': 'Today',
+                'summary': 'Подробный анализ экономической ситуации, прогнозы по росту ВВП, инфляции и изменениям на рынке труда.'
             },
-            {
-                'channel': 'Фондовый рынок',
-                'channel_size': 'Малый (220K+)',
-                'views': '83,000',
-                'forwards': '1,900',
-                'link': 'https://t.me/finance/456',
-                'topic': 'Инвестиции',
-                'engagement': 'Средний'
-            },
-            {
-                'channel': 'Новый стартап',
-                'channel_size': 'Малый (50K+)',
-                'views': '42,000',
-                'forwards': '3,700',
-                'link': 'https://t.me/startup_news/123',
-                'topic': 'Инновации',
-                'engagement': 'Высокий'
-            }
         ]
         
         return posts
@@ -474,31 +548,116 @@ class TelegramAnalytics:
         """Return mock data for niche analysis"""
         logging.info("Returning mock data for niche analysis")
         
-        # Sample niche data
         niches = {
-            'News': {
-                'avg_err': 5.2,
-                'growth_rate': 3.1,
-                'monetization': 'High',
-                'competition': 'High'
+            'Технологии и IT': {
+                'avg_err': '4.3',
+                'growth_rate': '8.5',
+                'monetization': 'Высокая',
+                'competition': 'Высокая',
+                'engagement_metrics': {
+                    'просмотры_к_подписчикам': '32%',
+                    'репосты_к_просмотрам': '3.2%',
+                    'комментарии_к_просмотрам': '1.5%'
+                },
+                'audience': {
+                    'возраст': '25-45 лет',
+                    'интересы': 'Программирование, гаджеты, инновации',
+                    'активность': 'Высокая (преимущественно в рабочее время)'
+                },
+                'content_recommendations': [
+                    'Обзоры новых технологий',
+                    'Туториалы по программированию',
+                    'Новости технологических компаний'
+                ],
+                'optimal_posting_time': '09:00 - 12:00, 17:00 - 19:00'
             },
-            'Entertainment': {
-                'avg_err': 4.8,
-                'growth_rate': 2.7,
-                'monetization': 'High',
-                'competition': 'Medium'
+            'Бизнес и финансы': {
+                'avg_err': '3.8',
+                'growth_rate': '6.2',
+                'monetization': 'Высокая',
+                'competition': 'Средняя',
+                'engagement_metrics': {
+                    'просмотры_к_подписчикам': '28%',
+                    'репосты_к_просмотрам': '2.8%',
+                    'комментарии_к_просмотрам': '1.2%'
+                },
+                'audience': {
+                    'возраст': '30-55 лет',
+                    'интересы': 'Инвестиции, предпринимательство, финансы',
+                    'активность': 'Средняя (утром и вечером)'
+                },
+                'content_recommendations': [
+                    'Финансовые советы',
+                    'Анализ рынков',
+                    'Истории успеха'
+                ],
+                'optimal_posting_time': '07:00 - 09:00, 19:00 - 21:00'
             },
-            'Technology': {
-                'avg_err': 3.9,
-                'growth_rate': 2.3,
-                'monetization': 'Medium',
-                'competition': 'Medium'
+            'Новости и СМИ': {
+                'avg_err': '5.2',
+                'growth_rate': '9.7',
+                'monetization': 'Средняя',
+                'competition': 'Очень высокая',
+                'engagement_metrics': {
+                    'просмотры_к_подписчикам': '45%',
+                    'репосты_к_просмотрам': '4.5%',
+                    'комментарии_к_просмотрам': '2.8%'
+                },
+                'audience': {
+                    'возраст': 'Все возрастные группы',
+                    'интересы': 'Текущие события, политика, общество',
+                    'активность': 'Высокая (в течение всего дня)'
+                },
+                'content_recommendations': [
+                    'Оперативные новости',
+                    'Аналитические обзоры',
+                    'Эксклюзивные репортажи'
+                ],
+                'optimal_posting_time': 'Равномерно в течение дня, пики: 07:00, 12:00, 18:00'
             },
-            'Education': {
-                'avg_err': 2.5,
-                'growth_rate': 1.8,
-                'monetization': 'Low',
-                'competition': 'Low'
+            'Развлечения и хобби': {
+                'avg_err': '3.5',
+                'growth_rate': '7.8',
+                'monetization': 'Средняя',
+                'competition': 'Средняя',
+                'engagement_metrics': {
+                    'просмотры_к_подписчикам': '35%',
+                    'репосты_к_просмотрам': '3.0%',
+                    'комментарии_к_просмотрам': '2.2%'
+                },
+                'audience': {
+                    'возраст': '18-35 лет',
+                    'интересы': 'Развлечения, игры, творчество',
+                    'активность': 'Высокая (вечер и выходные)'
+                },
+                'content_recommendations': [
+                    'Развлекательный контент',
+                    'Мастер-классы по хобби',
+                    'Юмористические посты'
+                ],
+                'optimal_posting_time': '15:00 - 23:00, активнее в выходные'
+            },
+            'Здоровье и спорт': {
+                'avg_err': '3.2',
+                'growth_rate': '5.4',
+                'monetization': 'Средняя',
+                'competition': 'Средняя',
+                'engagement_metrics': {
+                    'просмотры_к_подписчикам': '27%',
+                    'репосты_к_просмотрам': '2.3%',
+                    'комментарии_к_просмотрам': '1.8%'
+                },
+                'audience': {
+                    'возраст': '20-45 лет',
+                    'интересы': 'Фитнес, здоровое питание, медицина',
+                    'активность': 'Средняя (утро и вечер)'
+                },
+                'content_recommendations': [
+                    'Советы по здоровому образу жизни',
+                    'Тренировочные программы',
+                    'Рецепты здорового питания'
+                ],
+                'optimal_posting_time': '06:00 - 08:00, 17:00 - 20:00'
             }
         }
         

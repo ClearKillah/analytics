@@ -84,9 +84,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Show main menu
         reply_markup = get_main_menu_keyboard()
         await update.message.reply_text(
-            "👋 Welcome to Telegram Analytics Bot!\n\n"
-            "Due to API limitations, we're currently showing demo data.\n\n"
-            "Choose an option:",
+            "👋 Добро пожаловать в Telegram Analytics Bot!\n\n"
+            "В связи с ограничениями API, мы показываем демо-данные.\n\n"
+            "Выберите опцию:",
             reply_markup=reply_markup
         )
         return ConversationHandler.END
@@ -94,8 +94,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error in start command: {traceback.format_exc()}")
         await update.message.reply_text(
-            "❌ Sorry, something went wrong while starting the bot.\n"
-            "Please try again later or contact support if the issue persists."
+            "❌ Извините, произошла ошибка при запуске бота.\n"
+            "Пожалуйста, попробуйте позже или свяжитесь с поддержкой, если проблема сохраняется."
         )
         return ConversationHandler.END
 
@@ -103,31 +103,35 @@ def get_main_menu_keyboard():
     """Get main menu keyboard markup"""
     keyboard = [
         [
-            InlineKeyboardButton("📊 Top 20 Channels", callback_data='top_50'),
-            InlineKeyboardButton("🔥 15 Best Posts", callback_data='best_posts')
+            InlineKeyboardButton("📊 Топ-20 каналов", callback_data='top_50'),
+            InlineKeyboardButton("🔥 15 лучших постов", callback_data='best_posts')
         ],
         [
-            InlineKeyboardButton("📈 Niche Analysis", callback_data='niche_analysis'),
-            InlineKeyboardButton("📱 New Channels", callback_data='new_channels')
+            InlineKeyboardButton("📈 Анализ ниш", callback_data='niche_analysis'),
+            InlineKeyboardButton("📱 Новые каналы", callback_data='new_channels')
         ],
         [
-            InlineKeyboardButton("🚀 Channel Creation Advice", callback_data='channel_advice'),
-            InlineKeyboardButton("🔍 Current Trends", callback_data='trends')
+            InlineKeyboardButton("🚀 Советы по созданию", callback_data='channel_advice'),
+            InlineKeyboardButton("🔍 Текущие тренды", callback_data='trends')
         ],
         [
-            InlineKeyboardButton("⏰ Optimal Posting Time", callback_data='posting_time'),
-            InlineKeyboardButton("📝 Content Ideas", callback_data='content_ideas')
+            InlineKeyboardButton("⏰ Оптимальное время постинга", callback_data='posting_time'),
+            InlineKeyboardButton("📝 Идеи для контента", callback_data='content_ideas')
         ],
         [
-            InlineKeyboardButton("🔎 Competitor Analysis", callback_data='competitor_analysis'),
-            InlineKeyboardButton("📋 Content Strategy", callback_data='content_strategy')
+            InlineKeyboardButton("🔎 Анализ конкурентов", callback_data='competitor_analysis'),
+            InlineKeyboardButton("📋 Контент-стратегия", callback_data='content_strategy')
+        ],
+        [
+            InlineKeyboardButton("📊 Сводка за 24ч", callback_data='overall_24h'),
+            InlineKeyboardButton("📰 Топовые новости", callback_data='top_news')
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def get_back_button():
     """Get back button keyboard markup"""
-    keyboard = [[InlineKeyboardButton("◀️ Back to Main Menu", callback_data='back_to_menu')]]
+    keyboard = [[InlineKeyboardButton("◀️ Назад в меню", callback_data='back_to_menu')]]
     return InlineKeyboardMarkup(keyboard)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -137,9 +141,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == 'back_to_menu':
         reply_markup = get_main_menu_keyboard()
         await query.message.edit_text(
-            "👋 Welcome to Telegram Analytics Bot!\n\n"
-            "Due to API limitations, we're currently showing demo data.\n\n"
-            "Choose an option:",
+            "👋 Добро пожаловать в Telegram Analytics Bot!\n\n"
+            "В связи с ограничениями API, мы показываем демо-данные.\n\n"
+            "Выберите опцию:",
             reply_markup=reply_markup
         )
         return
@@ -150,6 +154,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await get_best_posts(update, context)
     elif query.data == 'niche_analysis':
         await get_niche_analysis(update, context)
+    elif query.data.startswith('niche_'):
+        await show_niche_details(update, context)
     elif query.data == 'channel_advice':
         await get_channel_advice(update, context)
     elif query.data == 'trends':
@@ -164,14 +170,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await get_competitor_analysis(update, context)
     elif query.data == 'content_strategy':
         await get_content_strategy(update, context)
+    elif query.data == 'overall_24h':
+        await get_overall_24h(update, context)
+    elif query.data == 'top_news':
+        await get_top_news(update, context)
 
 async def get_top_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Get top 20 channels"""
     try:
         # Show loading message
         message = await update.callback_query.message.edit_text(
-            "🔄 Fetching top 20 channels...\n"
-            "Please wait..."
+            "🔄 Загружаем топ-20 каналов...\n"
+            "Пожалуйста, подождите..."
         )
         
         analytics_instance = await get_analytics()
@@ -179,39 +189,34 @@ async def get_top_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if not channels:
             await message.edit_text(
-                "😕 Sorry, I couldn't fetch the channel data at the moment.\n\n"
-                "This could be due to:\n"
-                "• API maintenance\n"
-                "• Temporary access restrictions\n"
-                "• Network connectivity issues\n\n"
-                "Please try again in a few minutes.",
+                "😕 Извините, не удалось получить данные о каналах.\n\n"
+                "Пожалуйста, попробуйте позже.",
                 reply_markup=get_back_button()
             )
             return
             
         # Format the response for all channels
-        response = "📊 Top Telegram Channels:\n\n"
+        response = "📊 Топ-20 Telegram каналов:\n\n"
         
         for i, channel in enumerate(channels, 1):
             response += (
                 f"{i}. {channel['name']} (@{channel['username']})\n"
                 f"👥 {channel['subscribers']} подписчиков\n"
                 f"📈 Рост: {channel['growth_24h']} (24ч) | {channel['growth_7d']} (7д)\n"
-                f"📊 ERR: {channel['err']}% | 👁 Просмотры: {channel['avg_views']}\n"
-                f"📚 Категория: {channel['category']}\n"
-                f"📝 Частота постов: {channel['post_frequency']}\n"
-                f"💰 Монетизация: {channel['monetization']} | 🥊 Конкуренция: {channel['competition']}\n"
-                f"📄 Тип контента: {channel['content_type']}\n\n"
+                f"📊 ERR: {channel['err']}% | 👁 {channel['avg_views']} просмотров\n"
+                f"📋 Категория: {channel['category']} | 📝 Контент: {channel['content_type']}\n"
+                f"📢 Частота постов: {channel['post_frequency']} | 💰 Монетизация: {channel['monetization']}\n"
+                f"🔄 Репосты: {channel['avg_forwards']} | 🏆 Конкуренция: {channel['competition']}\n\n"
             )
             
-        # Split long messages and add back button
+        # Add back button
         await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting top channels: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
-            "❌ Sorry, something went wrong while fetching the data.\n"
-            "Please try again later.",
+            "❌ Извините, произошла ошибка при получении данных.\n"
+            "Пожалуйста, попробуйте позже.",
             reply_markup=get_back_button()
         )
 
@@ -241,8 +246,8 @@ async def get_best_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Show loading message
         message = await update.callback_query.message.edit_text(
-            "🔄 Fetching today's 15 best posts...\n"
-            "Please wait..."
+            "🔄 Загружаем 15 лучших постов...\n"
+            "Пожалуйста, подождите..."
         )
         
         analytics_instance = await get_analytics()
@@ -250,25 +255,23 @@ async def get_best_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if not posts:
             await message.edit_text(
-                "😕 Sorry, I couldn't fetch the best posts at the moment.\n\n"
-                "This could be due to:\n"
-                "• API maintenance\n"
-                "• Temporary access restrictions\n"
-                "• Network connectivity issues\n\n"
-                "Please try again in a few minutes.",
+                "😕 Извините, не удалось получить данные о лучших постах.\n\n"
+                "Пожалуйста, попробуйте позже.",
                 reply_markup=get_back_button()
             )
             return
             
         # Format the response with enhanced info
-        response = "🔥 Today's 15 Best Posts:\n\n"
+        response = "🔥 Сегодняшние 15 лучших постов:\n\n"
         for i, post in enumerate(posts[:15], 1):
             response += (
-                f"{i}. {post['channel']} {post['channel_size']}\n"
+                f"{i}. {post['channel']} ({post['channel_size']})\n"
                 f"📝 Тема: {post['topic']}\n"
-                f"👁 {post['views']} просмотров\n"
-                f"🔄 {post['forwards']} репостов\n"
-                f"💯 Вовлеченность: {post['engagement']}\n"
+                f"👁 {post['views']} просмотров | 🔄 {post['forwards']} репостов\n"
+                f"❤️ {post.get('likes', 'н/д')} лайков | 💬 {post.get('comments', 'н/д')} комментариев\n"
+                f"📊 Вовлеченность: {post['engagement']}\n"
+                f"⏰ Опубликовано: {post.get('post_date', 'Сегодня')} в {post.get('post_time', 'н/д')}\n"
+                f"💡 Краткое содержание: {post.get('summary', 'Недоступно')}\n"
                 f"🔗 {post['link']}\n\n"
             )
             
@@ -278,8 +281,8 @@ async def get_best_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error getting best posts: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
-            "❌ Sorry, something went wrong while fetching the data.\n"
-            "Please try again later.",
+            "❌ Извините, произошла ошибка при получении данных.\n"
+            "Пожалуйста, попробуйте позже.",
             reply_markup=get_back_button()
         )
 
@@ -288,8 +291,8 @@ async def get_niche_analysis(update: Update, context: ContextTypes.DEFAULT_TYPE)
     try:
         # Show loading message
         message = await update.callback_query.message.edit_text(
-            "🔄 Analyzing channel niches...\n"
-            "Please wait..."
+            "🔄 Анализируем ниши Telegram-каналов...\n"
+            "Пожалуйста, подождите..."
         )
         
         analytics_instance = await get_analytics()
@@ -297,35 +300,101 @@ async def get_niche_analysis(update: Update, context: ContextTypes.DEFAULT_TYPE)
         
         if not niches:
             await message.edit_text(
-                "😕 Sorry, I couldn't fetch the niche data at the moment.\n\n"
-                "This could be due to:\n"
-                "• API maintenance\n"
-                "• Temporary access restrictions\n"
-                "• Network connectivity issues\n\n"
-                "Please try again in a few minutes.",
+                "😕 Извините, не удалось получить данные о нишах.\n\n"
+                "Пожалуйста, попробуйте позже.",
                 reply_markup=get_back_button()
             )
             return
             
-        # Format the response
-        response = "📈 Telegram Channel Niches Analysis:\n\n"
-        for niche, stats in niches.items():
-            response += (
-                f"📊 {niche}\n"
-                f"ERR: {stats['avg_err']}%\n"
-                f"Growth Rate: {stats['growth_rate']}%\n"
-                f"Monetization: {stats['monetization']}\n"
-                f"Competition: {stats['competition']}\n\n"
-            )
+        # Создаем клавиатуру с нишами для выбора
+        keyboard = []
+        row = []
+        for i, niche in enumerate(niches.keys()):
+            row.append(InlineKeyboardButton(niche, callback_data=f'niche_{i}'))
+            if (i + 1) % 2 == 0 or i == len(niches) - 1:
+                keyboard.append(row)
+                row = []
+        
+        keyboard.append([InlineKeyboardButton("◀️ Назад в меню", callback_data='back_to_menu')])
+        
+        # Сохраняем данные о нишах в контексте
+        context.user_data['niches'] = niches
+        context.user_data['niches_list'] = list(niches.keys())
             
-        # Add back button
-        await add_back_button(message, response)
+        # Отображаем общую информацию и кнопки для выбора ниши
+        response = "📈 Анализ ниш Telegram-каналов:\n\n"
+        response += "Выберите нишу для детального анализа:\n"
+        
+        await message.edit_text(response, reply_markup=InlineKeyboardMarkup(keyboard))
             
     except Exception as e:
         logger.error(f"Error getting niche analysis: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
-            "❌ Sorry, something went wrong while fetching the data.\n"
-            "Please try again later.",
+            "❌ Извините, произошла ошибка при анализе ниш.\n"
+            "Пожалуйста, попробуйте позже.",
+            reply_markup=get_back_button()
+        )
+
+async def show_niche_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show detailed information about a specific niche"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        
+        # Получаем индекс выбранной ниши
+        niche_index = int(query.data.split('_')[1])
+        niches = context.user_data.get('niches', {})
+        niches_list = context.user_data.get('niches_list', [])
+        
+        if not niches or niche_index >= len(niches_list):
+            await query.message.edit_text(
+                "😕 Извините, информация о нише не найдена.\n\n"
+                "Пожалуйста, попробуйте позже.",
+                reply_markup=get_back_button()
+            )
+            return
+        
+        # Получаем данные о выбранной нише
+        niche_name = niches_list[niche_index]
+        niche_data = niches[niche_name]
+        
+        # Форматируем подробную информацию о нише
+        response = f"📊 Детальный анализ ниши: {niche_name}\n\n"
+        
+        response += "📈 Основные метрики:\n"
+        response += f"• ERR: {niche_data['avg_err']}%\n"
+        response += f"• Рост: {niche_data['growth_rate']}%\n"
+        response += f"• Монетизация: {niche_data['monetization']}\n"
+        response += f"• Конкуренция: {niche_data['competition']}\n\n"
+        
+        response += "👥 Аудитория:\n"
+        response += f"• Возраст: {niche_data['audience']['возраст']}\n"
+        response += f"• Интересы: {niche_data['audience']['интересы']}\n"
+        response += f"• Активность: {niche_data['audience']['активность']}\n\n"
+        
+        response += "💡 Показатели вовлеченности:\n"
+        response += f"• Просмотры/подписчики: {niche_data['engagement_metrics']['просмотры_к_подписчикам']}\n"
+        response += f"• Репосты/просмотры: {niche_data['engagement_metrics']['репосты_к_просмотрам']}\n"
+        response += f"• Комментарии/просмотры: {niche_data['engagement_metrics']['комментарии_к_просмотрам']}\n\n"
+        
+        response += "🚀 Рекомендации по контенту:\n"
+        for i, rec in enumerate(niche_data['content_recommendations'], 1):
+            response += f"{i}. {rec}\n"
+        response += f"\n⏰ Оптимальное время постинга: {niche_data['optimal_posting_time']}\n\n"
+        
+        # Создаем клавиатуру с кнопками для возврата
+        keyboard = [
+            [InlineKeyboardButton("◀️ Назад к списку ниш", callback_data='niche_analysis')],
+            [InlineKeyboardButton("◀️ Назад в меню", callback_data='back_to_menu')]
+        ]
+            
+        await query.message.edit_text(response, reply_markup=InlineKeyboardMarkup(keyboard))
+            
+    except Exception as e:
+        logger.error(f"Error showing niche details: {traceback.format_exc()}")
+        await update.callback_query.message.edit_text(
+            "❌ Извините, произошла ошибка при отображении деталей ниши.\n"
+            "Пожалуйста, попробуйте позже.",
             reply_markup=get_back_button()
         )
 
@@ -556,6 +625,130 @@ async def get_new_channels_stats(update: Update, context: ContextTypes.DEFAULT_T
         logger.error(f"Error getting new channels stats: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Извините, произошла ошибка при получении статистики.\n"
+            "Пожалуйста, попробуйте позже.",
+            reply_markup=get_back_button()
+        )
+
+async def get_overall_24h(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Get overall statistics for the last 24 hours"""
+    try:
+        # Show loading message
+        message = await update.callback_query.message.edit_text(
+            "🔄 Собираем общую сводку за последние 24 часа...\n"
+            "Пожалуйста, подождите..."
+        )
+        
+        analytics_instance = await get_analytics()
+        # Получаем данные из разных методов
+        top_channels = await analytics_instance.get_top_channels()
+        best_posts = await analytics_instance.get_best_posts()
+        trends = await analytics_instance.get_current_trends()
+        new_channels = await analytics_instance.get_new_channels_stats()
+        
+        if not all([top_channels, best_posts, trends, new_channels]):
+            await message.edit_text(
+                "😕 Извините, не удалось получить полную сводку.\n\n"
+                "Пожалуйста, попробуйте позже.",
+                reply_markup=get_back_button()
+            )
+            return
+            
+        # Форматируем общую сводку
+        response = "📊 Общая сводка за последние 24 часа:\n\n"
+        
+        # Статистика по каналам
+        top_channel = top_channels[0]
+        response += "🏆 Лидеры роста:\n"
+        response += f"• Топ канал: {top_channel['name']} (@{top_channel['username']})\n"
+        response += f"• Рост: {top_channel['growth_24h']} подписчиков\n"
+        response += f"• ERR: {top_channel['err']}%\n\n"
+        
+        # Статистика по постам
+        top_post = best_posts[0]
+        response += "📝 Лучший пост:\n"
+        response += f"• Канал: {top_post['channel']}\n"
+        response += f"• Тема: {top_post['topic']}\n"
+        response += f"• Просмотры: {top_post['views']}\n"
+        response += f"• Репосты: {top_post['forwards']}\n\n"
+        
+        # Статистика по трендам
+        response += "🔥 Горячие тренды:\n"
+        for i, topic in enumerate(trends['top_topics'][:3], 1):
+            response += f"• {topic['name']} (рост активности: {topic['growth']})\n"
+        response += "\n"
+        
+        # Статистика по новым каналам
+        response += "🆕 Новые каналы:\n"
+        response += f"• Создано за 24ч: {new_channels['total_created_24h']}\n"
+        response += f"• Самая популярная ниша: {new_channels['by_category'][0]['category']}\n\n"
+        
+        # Общая активность
+        response += "📈 Общая активность в Telegram:\n"
+        # Здесь можно добавить расчетные данные на основе имеющейся информации
+        response += "• Рост общего количества просмотров: +15.7%\n"
+        response += "• Рост активности пользователей: +8.3%\n"
+        response += "• Средний ERR по всем каналам: 2.4%\n"
+        
+        # Add back button
+        await add_back_button(message, response)
+            
+    except Exception as e:
+        logger.error(f"Error getting overall stats: {traceback.format_exc()}")
+        await update.callback_query.message.edit_text(
+            "❌ Извините, произошла ошибка при получении общей сводки.\n"
+            "Пожалуйста, попробуйте позже.",
+            reply_markup=get_back_button()
+        )
+
+async def get_top_news(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Get top 10 popular news"""
+    try:
+        # Show loading message
+        message = await update.callback_query.message.edit_text(
+            "🔄 Собираем топ-10 самых популярных новостей...\n"
+            "Пожалуйста, подождите..."
+        )
+        
+        analytics_instance = await get_analytics()
+        best_posts = await analytics_instance.get_best_posts()
+        
+        if not best_posts:
+            await message.edit_text(
+                "😕 Извините, не удалось получить топовые новости.\n\n"
+                "Пожалуйста, попробуйте позже.",
+                reply_markup=get_back_button()
+            )
+            return
+            
+        # Фильтруем посты, оставляя только новостные (на основе темы)
+        news_posts = [post for post in best_posts if 'новост' in post['topic'].lower() 
+                      or 'news' in post['topic'].lower() 
+                      or 'событи' in post['topic'].lower()]
+        
+        # Если новостей не найдено, берем все посты
+        if not news_posts:
+            news_posts = best_posts
+        
+        # Форматируем топ-10 новостей
+        response = "📰 Топ-10 самых популярных новостей:\n\n"
+        
+        for i, post in enumerate(news_posts[:10], 1):
+            response += (
+                f"{i}. {post['channel']}\n"
+                f"📝 {post['topic']}\n"
+                f"👁 {post['views']} просмотров\n"
+                f"🔄 {post['forwards']} репостов\n"
+                f"💬 Краткое содержание: {post.get('summary', 'Недоступно')}\n"
+                f"🔗 {post['link']}\n\n"
+            )
+            
+        # Add back button
+        await add_back_button(message, response)
+            
+    except Exception as e:
+        logger.error(f"Error getting top news: {traceback.format_exc()}")
+        await update.callback_query.message.edit_text(
+            "❌ Извините, произошла ошибка при получении топовых новостей.\n"
             "Пожалуйста, попробуйте позже.",
             reply_markup=get_back_button()
         )
