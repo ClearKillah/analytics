@@ -26,6 +26,15 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEMETR_TOKEN = os.getenv("TELEMETR_TOKEN")
 
+# Если токены не найдены в переменных окружения, используем дефолтные значения
+if not TELEGRAM_TOKEN:
+    TELEGRAM_TOKEN = "7355185058:AAHL9oH7eArRZQCaUlRATsUTiWox1sOnJBk"
+    logger.warning("TELEGRAM_BOT_TOKEN not found in environment variables. Using default value.")
+
+if not TELEMETR_TOKEN:
+    TELEMETR_TOKEN = "DHS93aTkpSFAVc88TZiESbWvNuvsftsO"
+    logger.warning("TELEMETR_TOKEN not found in environment variables. Using default value.")
+
 # Initialize analytics
 analytics = None
 
@@ -71,21 +80,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the bot and show main menu"""
     try:
         # Show main menu
-        keyboard = [
-            [
-                InlineKeyboardButton("📊 Top 20 Channels", callback_data='top_50'),
-                InlineKeyboardButton("🔥 15 Best Posts", callback_data='best_posts')
-            ],
-            [
-                InlineKeyboardButton("📈 Niche Analysis", callback_data='niche_analysis'),
-                InlineKeyboardButton("📱 New Channels", callback_data='new_channels')
-            ],
-            [
-                InlineKeyboardButton("🚀 Channel Creation Advice", callback_data='channel_advice'),
-                InlineKeyboardButton("🔍 Current Trends", callback_data='trends')
-            ]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        reply_markup = get_main_menu_keyboard()
         await update.message.reply_text(
             "👋 Welcome to Telegram Analytics Bot!\n\n"
             "Due to API limitations, we're currently showing demo data.\n\n"
@@ -102,9 +97,50 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return ConversationHandler.END
 
+def get_main_menu_keyboard():
+    """Get main menu keyboard markup"""
+    keyboard = [
+        [
+            InlineKeyboardButton("📊 Top 20 Channels", callback_data='top_50'),
+            InlineKeyboardButton("🔥 15 Best Posts", callback_data='best_posts')
+        ],
+        [
+            InlineKeyboardButton("📈 Niche Analysis", callback_data='niche_analysis'),
+            InlineKeyboardButton("📱 New Channels", callback_data='new_channels')
+        ],
+        [
+            InlineKeyboardButton("🚀 Channel Creation Advice", callback_data='channel_advice'),
+            InlineKeyboardButton("🔍 Current Trends", callback_data='trends')
+        ],
+        [
+            InlineKeyboardButton("⏰ Optimal Posting Time", callback_data='posting_time'),
+            InlineKeyboardButton("📝 Content Ideas", callback_data='content_ideas')
+        ],
+        [
+            InlineKeyboardButton("🔎 Competitor Analysis", callback_data='competitor_analysis'),
+            InlineKeyboardButton("📋 Content Strategy", callback_data='content_strategy')
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def get_back_button():
+    """Get back button keyboard markup"""
+    keyboard = [[InlineKeyboardButton("◀️ Back to Main Menu", callback_data='back_to_menu')]]
+    return InlineKeyboardMarkup(keyboard)
+
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    
+    if query.data == 'back_to_menu':
+        reply_markup = get_main_menu_keyboard()
+        await query.message.edit_text(
+            "👋 Welcome to Telegram Analytics Bot!\n\n"
+            "Due to API limitations, we're currently showing demo data.\n\n"
+            "Choose an option:",
+            reply_markup=reply_markup
+        )
+        return
     
     if query.data == 'top_50':
         await get_top_channels(update, context)
@@ -118,6 +154,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await get_current_trends(update, context)
     elif query.data == 'new_channels':
         await get_new_channels_stats(update, context)
+    elif query.data == 'posting_time':
+        await get_optimal_posting_time(update, context)
+    elif query.data == 'content_ideas':
+        await get_content_ideas(update, context)
+    elif query.data == 'competitor_analysis':
+        await get_competitor_analysis(update, context)
+    elif query.data == 'content_strategy':
+        await get_content_strategy(update, context)
 
 async def get_top_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Get top 20 channels"""
@@ -138,7 +182,8 @@ async def get_top_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "• API maintenance\n"
                 "• Temporary access restrictions\n"
                 "• Network connectivity issues\n\n"
-                "Please try again in a few minutes."
+                "Please try again in a few minutes.",
+                reply_markup=get_back_button()
             )
             return
             
@@ -157,38 +202,37 @@ async def get_top_channels(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"📄 Тип контента: {channel['content_type']}\n\n"
             )
             
-        # Split long messages if needed
-        if len(response) > 4096:
-            parts = []
-            for x in range(0, len(channels), 5):
-                part_response = "📊 Top Telegram Channels (продолжение):\n\n"
-                for i, channel in enumerate(channels[x:x+5], x+1):
-                    part_response += (
-                        f"{i}. {channel['name']} (@{channel['username']})\n"
-                        f"👥 {channel['subscribers']} подписчиков\n"
-                        f"📈 Рост: {channel['growth_24h']} (24ч) | {channel['growth_7d']} (7д)\n"
-                        f"📊 ERR: {channel['err']}% | 👁 Просмотры: {channel['avg_views']}\n"
-                        f"📚 Категория: {channel['category']}\n"
-                        f"📝 Частота постов: {channel['post_frequency']}\n"
-                        f"💰 Монетизация: {channel['monetization']} | 🥊 Конкуренция: {channel['competition']}\n"
-                        f"📄 Тип контента: {channel['content_type']}\n\n"
-                    )
-                parts.append(part_response)
-                
-            for i, part in enumerate(parts):
-                if i == 0:
-                    await message.edit_text(part)
-                else:
-                    await message.reply_text(part)
-        else:
-            await message.edit_text(response)
+        # Split long messages and add back button
+        await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting top channels: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Sorry, something went wrong while fetching the data.\n"
-            "Please try again later."
+            "Please try again later.",
+            reply_markup=get_back_button()
         )
+
+async def add_back_button(message, text):
+    """Add back button to the message"""
+    # Split long messages if needed
+    if len(text) > 4096:
+        parts = []
+        for x in range(0, len(text), 4096):
+            if x == 0:
+                parts.append(text[:4096])
+            else:
+                parts.append(text[x:x+4096])
+                
+        for i, part in enumerate(parts):
+            if i == 0:
+                await message.edit_text(part)
+            else:
+                sent = await message.reply_text(part)
+                if i == len(parts) - 1:
+                    await sent.reply_text("Вернуться в главное меню:", reply_markup=get_back_button())
+    else:
+        await message.edit_text(text, reply_markup=get_back_button())
 
 async def get_best_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Get best posts of the day"""
@@ -209,7 +253,8 @@ async def get_best_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "• API maintenance\n"
                 "• Temporary access restrictions\n"
                 "• Network connectivity issues\n\n"
-                "Please try again in a few minutes."
+                "Please try again in a few minutes.",
+                reply_markup=get_back_button()
             )
             return
             
@@ -225,35 +270,15 @@ async def get_best_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"🔗 {post['link']}\n\n"
             )
             
-        # Split long messages if needed
-        if len(response) > 4096:
-            parts = []
-            for x in range(0, len(posts[:15]), 5):
-                part_response = "🔥 Today's Best Posts (продолжение):\n\n"
-                for i, post in enumerate(posts[x:x+5], x+1):
-                    part_response += (
-                        f"{i}. {post['channel']} {post['channel_size']}\n"
-                        f"📝 Тема: {post['topic']}\n"
-                        f"👁 {post['views']} просмотров\n"
-                        f"🔄 {post['forwards']} репостов\n"
-                        f"💯 Вовлеченность: {post['engagement']}\n"
-                        f"🔗 {post['link']}\n\n"
-                    )
-                parts.append(part_response)
-                
-            for i, part in enumerate(parts):
-                if i == 0:
-                    await message.edit_text(part)
-                else:
-                    await message.reply_text(part)
-        else:
-            await message.edit_text(response)
+        # Add back button
+        await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting best posts: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Sorry, something went wrong while fetching the data.\n"
-            "Please try again later."
+            "Please try again later.",
+            reply_markup=get_back_button()
         )
 
 async def get_niche_analysis(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -275,7 +300,8 @@ async def get_niche_analysis(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 "• API maintenance\n"
                 "• Temporary access restrictions\n"
                 "• Network connectivity issues\n\n"
-                "Please try again in a few minutes."
+                "Please try again in a few minutes.",
+                reply_markup=get_back_button()
             )
             return
             
@@ -290,21 +316,15 @@ async def get_niche_analysis(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 f"Competition: {stats['competition']}\n\n"
             )
             
-        # Split long messages if needed
-        if len(response) > 4096:
-            for x in range(0, len(response), 4096):
-                if x == 0:
-                    await message.edit_text(response[x:x+4096])
-                else:
-                    await message.reply_text(response[x:x+4096])
-        else:
-            await message.edit_text(response)
+        # Add back button
+        await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting niche analysis: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Sorry, something went wrong while fetching the data.\n"
-            "Please try again later."
+            "Please try again later.",
+            reply_markup=get_back_button()
         )
 
 async def get_channel_advice(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -323,7 +343,8 @@ async def get_channel_advice(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if not channels or not niches:
             await message.edit_text(
                 "😕 Извините, не удалось получить данные для анализа.\n\n"
-                "Пожалуйста, попробуйте позже."
+                "Пожалуйста, попробуйте позже.",
+                reply_markup=get_back_button()
             )
             return
         
@@ -422,21 +443,15 @@ async def get_channel_advice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             "8. Оптимизируйте время публикаций на основе активности аудитории\n"
         )
         
-        # Split long messages if needed
-        if len(response) > 4096:
-            for x in range(0, len(response), 4096):
-                if x == 0:
-                    await message.edit_text(response[x:x+4096])
-                else:
-                    await message.reply_text(response[x:x+4096])
-        else:
-            await message.edit_text(response)
+        # Add back button
+        await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting channel advice: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Извините, произошла ошибка при анализе данных.\n"
-            "Пожалуйста, попробуйте позже."
+            "Пожалуйста, попробуйте позже.",
+            reply_markup=get_back_button()
         )
 
 async def get_current_trends(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -454,7 +469,8 @@ async def get_current_trends(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if not trends:
             await message.edit_text(
                 "😕 Извините, не удалось получить данные о трендах.\n\n"
-                "Пожалуйста, попробуйте позже."
+                "Пожалуйста, попробуйте позже.",
+                reply_markup=get_back_button()
             )
             return
             
@@ -482,21 +498,15 @@ async def get_current_trends(update: Update, context: ContextTypes.DEFAULT_TYPE)
         response += f"а из форматов контента наиболее эффективны {trends['growing_formats'][0]['format']} "
         response += f"и {trends['growing_formats'][1]['format']}."
             
-        # Split long messages if needed
-        if len(response) > 4096:
-            for x in range(0, len(response), 4096):
-                if x == 0:
-                    await message.edit_text(response[x:x+4096])
-                else:
-                    await message.reply_text(response[x:x+4096])
-        else:
-            await message.edit_text(response)
+        # Add back button
+        await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting trends: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Извините, произошла ошибка при анализе трендов.\n"
-            "Пожалуйста, попробуйте позже."
+            "Пожалуйста, попробуйте позже.",
+            reply_markup=get_back_button()
         )
 
 async def get_new_channels_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -514,7 +524,8 @@ async def get_new_channels_stats(update: Update, context: ContextTypes.DEFAULT_T
         if not stats:
             await message.edit_text(
                 "😕 Извините, не удалось получить статистику о новых каналах.\n\n"
-                "Пожалуйста, попробуйте позже."
+                "Пожалуйста, попробуйте позже.",
+                reply_markup=get_back_button()
             )
             return
             
@@ -536,21 +547,15 @@ async def get_new_channels_stats(update: Update, context: ContextTypes.DEFAULT_T
         for i in range(3):
             response += f"{i+1}. {stats['by_category'][i]['category']} ({stats['by_category'][i]['share']})\n"
             
-        # Split long messages if needed
-        if len(response) > 4096:
-            for x in range(0, len(response), 4096):
-                if x == 0:
-                    await message.edit_text(response[x:x+4096])
-                else:
-                    await message.reply_text(response[x:x+4096])
-        else:
-            await message.edit_text(response)
+        # Add back button
+        await add_back_button(message, response)
             
     except Exception as e:
         logger.error(f"Error getting new channels stats: {traceback.format_exc()}")
         await update.callback_query.message.edit_text(
             "❌ Извините, произошла ошибка при получении статистики.\n"
-            "Пожалуйста, попробуйте позже."
+            "Пожалуйста, попробуйте позже.",
+            reply_markup=get_back_button()
         )
 
 async def cleanup():
@@ -559,13 +564,15 @@ async def cleanup():
         await analytics.close()
 
 def main():
-    # Try to acquire the lock
+    """Start the bot"""
     lock_file = acquire_lock()
     if not lock_file:
         print("Error: Another instance of the bot is already running.")
         sys.exit(1)
         
     try:
+        logger.info(f"Starting bot with token: {TELEGRAM_TOKEN[:10]}... and Telemetr token: {TELEMETR_TOKEN[:5]}...")
+        
         # Create application with increased timeout
         application = (
             Application.builder()
@@ -582,6 +589,7 @@ def main():
 
         # Start the bot with error handling
         try:
+            logger.info("Bot polling started")
             application.run_polling(
                 allowed_updates=Update.ALL_TYPES,
                 drop_pending_updates=True,
@@ -598,4 +606,8 @@ def main():
         release_lock(lock_file)
 
 if __name__ == '__main__':
-    main() 
+    try:
+        main()
+    except Exception as e:
+        logger.error(f"Fatal error in main: {traceback.format_exc()}")
+        sys.exit(1) 
