@@ -57,6 +57,7 @@ def acquire_lock():
         return lock_file
     except (IOError, OSError) as e:
         logger.error(f"Another instance is already running: {e}")
+        # For Railway, continue anyway
         return None
 
 def release_lock(lock_file):
@@ -65,7 +66,8 @@ def release_lock(lock_file):
         try:
             fcntl.flock(lock_file, fcntl.LOCK_UN)
             lock_file.close()
-            os.remove(LOCK_FILE)
+            if os.path.exists(LOCK_FILE):
+                os.remove(LOCK_FILE)
         except (IOError, OSError) as e:
             logger.error(f"Error releasing lock: {e}")
 
@@ -566,12 +568,13 @@ async def cleanup():
 def main():
     """Start the bot"""
     lock_file = acquire_lock()
-    if not lock_file:
-        print("Error: Another instance of the bot is already running.")
-        sys.exit(1)
-        
+    
     try:
         logger.info(f"Starting bot with token: {TELEGRAM_TOKEN[:10]}... and Telemetr token: {TELEMETR_TOKEN[:5]}...")
+        
+        # Print more debug info
+        print(f"Starting bot on {datetime.now()} with token: {TELEGRAM_TOKEN}")
+        print(f"Using Telemetr token: {TELEMETR_TOKEN}")
         
         # Create application with increased timeout
         application = (
@@ -590,6 +593,7 @@ def main():
         # Start the bot with error handling
         try:
             logger.info("Bot polling started")
+            print("Bot polling started successfully!")
             application.run_polling(
                 allowed_updates=Update.ALL_TYPES,
                 drop_pending_updates=True,
@@ -597,6 +601,7 @@ def main():
             )
         except Exception as e:
             logger.error(f"Error running bot: {traceback.format_exc()}")
+            print(f"ERROR RUNNING BOT: {str(e)}")
         finally:
             # Cleanup resources
             asyncio.get_event_loop().run_until_complete(cleanup())
@@ -610,4 +615,5 @@ if __name__ == '__main__':
         main()
     except Exception as e:
         logger.error(f"Fatal error in main: {traceback.format_exc()}")
+        print(f"FATAL ERROR: {str(e)}")
         sys.exit(1) 
